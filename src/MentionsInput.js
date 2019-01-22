@@ -87,7 +87,7 @@ const propTypes = {
   onSelect: PropTypes.func,
   onBlur: PropTypes.func,
   onChange: PropTypes.func,
-  suggestionsPortalHost: typeof Element === 'undefined' ? PropTypes.any : PropTypes.PropTypes.instanceOf(Element),
+  suggestionsPortalHost: PropTypes.any, 
   inputRef: PropTypes.oneOfType([
     PropTypes.func,
     PropTypes.shape({ current: typeof Element === 'undefined' ? PropTypes.any : PropTypes.instanceOf(Element) }),
@@ -296,15 +296,6 @@ class MentionsInput extends React.Component {
 
   // Handle input element's change event
   handleChange = ev => {
-    // if we are inside iframe, we need to find activeElement within its contentDocument
-    const currentDocument =
-      (document.activeElement && document.activeElement.contentDocument) ||
-      document
-    if (currentDocument.activeElement !== ev.target) {
-      // fix an IE bug (blur from empty input element with placeholder attribute trigger "input" event)
-      return
-    }
-
     const value = this.props.value || ''
     const { markup, displayTransform, regex } = this.props
 
@@ -393,7 +384,7 @@ class MentionsInput extends React.Component {
   handleKeyDown = ev => {
     // do not intercept key events if the suggestions overlay is not shown
     const suggestionsCount = countSuggestions(this.state.suggestions)
-
+    this.handleSelect(ev)
     const suggestionsComp = this.suggestionsRef
     if (suggestionsCount === 0 || !suggestionsComp) {
       this.props.onKeyDown(ev)
@@ -513,7 +504,7 @@ class MentionsInput extends React.Component {
       position.top -= highlighter.scrollTop
       // guard for mentions suggestions list clipped by right edge of window
       const viewportWidth = Math.max(
-        document.documentElement.clientWidth,
+        highlighter.ownerDocument.documentElement.clientWidth,
         window.innerWidth || 0
       )
       if (left + suggestions.offsetWidth > viewportWidth) {
